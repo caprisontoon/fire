@@ -1,0 +1,98 @@
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  margin: 0; background: #f4f6fa; color: #1f2937; line-height: 1.6;
+}
+
+header { background: #1e3a8a; color: #fff; padding: 24px 16px; text-align: center; }
+header h1 { margin: 0; font-size: 1.5rem; }
+.subtitle { margin: 6px 0 0; font-size: 0.9rem; opacity: 0.85; }
+
+.disclaimer-banner {
+  background: #fef3c7; border-bottom: 1px solid #f59e0b; color: #78350f;
+  padding: 10px 16px; font-size: 0.85rem; text-align: center;
+}
+
+#step-nav {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
+  padding: 12px 8px; background: #fff; border-bottom: 1px solid #e5e7eb;
+  position: sticky; top: 0; z-index: 10;
+}
+#step-nav button {
+  border: 1px solid #d1d5db; background: #fff; border-radius: 16px;
+  padding: 6px 14px; font-size: 0.85rem; cursor: pointer; color: #374151;
+}
+#step-nav button.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+#step-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+main { max-width: 860px; margin: 0 auto; padding: 16px; }
+.step { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.hidden { display: none !important; }
+
+h2 { margin-top: 0; font-size: 1.2rem; color: #1e3a8a; }
+h3 { margin: 28px 0 8px; font-size: 1.05rem; color: #1e3a8a; }
+.unit-note { font-size: 0.8rem; color: #6b7280; font-weight: normal; }
+.step-note { font-size: 0.88rem; color: #4b5563; background: #f0f4ff; padding: 8px 12px; border-radius: 8px; }
+
+.field { margin-bottom: 18px; }
+.field label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.95rem; }
+.required { color: #dc2626; }
+.field input[type="number"], .field select {
+  width: 100%; max-width: 340px; padding: 9px 12px; font-size: 1rem;
+  border: 1px solid #d1d5db; border-radius: 8px;
+}
+.field input:focus, .field select:focus { outline: 2px solid #93c5fd; border-color: #3b82f6; }
+.hint { font-size: 0.8rem; color: #6b7280; margin: 4px 0 0; }
+.money-display { font-size: 0.85rem; color: #1d4ed8; font-weight: 600; margin: 3px 0 0; min-height: 1.2em; }
+.checkbox-field label { font-weight: 600; }
+.highlight-field { border-left: 3px solid #f59e0b; padding-left: 12px; }
+
+.nav-buttons {
+  max-width: 860px; margin: 16px auto 0; padding: 0 16px;
+  display: flex; justify-content: space-between; gap: 8px;
+}
+button {
+  font-family: inherit; font-size: 0.95rem; padding: 10px 22px;
+  border-radius: 8px; border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+}
+button.primary { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+button.primary:hover { background: #1d4ed8; }
+button.big { font-size: 1.1rem; padding: 14px 36px; }
+.submit-area { text-align: center; margin-top: 24px; }
+
+.error {
+  color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5;
+  border-radius: 8px; padding: 10px; margin-top: 12px; font-size: 0.9rem;
+}
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 16px 0; }
+.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #fafbff; }
+.card h4 { margin: 0 0 8px; font-size: 0.9rem; color: #6b7280; }
+.card .value { font-size: 1.35rem; font-weight: 700; margin-bottom: 6px; }
+.card .desc { font-size: 0.83rem; color: #4b5563; }
+.card.good { border-color: #34d399; background: #ecfdf5; }
+.card.good .value { color: #047857; }
+.card.bad { border-color: #f87171; background: #fef2f2; }
+.card.bad .value { color: #b91c1c; }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; background: #fff; }
+th, td { border: 1px solid #e5e7eb; padding: 7px 10px; text-align: right; white-space: nowrap; }
+th { background: #f0f4ff; color: #1e3a8a; text-align: center; }
+td:first-child, th:first-child { text-align: center; }
+
+.chart-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; }
+
+.simplification { margin-top: 28px; font-size: 0.85rem; color: #4b5563; }
+.simplification summary { cursor: pointer; font-weight: 600; color: #1e3a8a; }
+
+footer {
+  text-align: center; font-size: 0.78rem; color: #9ca3af;
+  padding: 28px 16px 40px; max-width: 860px; margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .step { padding: 16px; }
+  .field input[type="number"], .field select { max-width: 100%; }
+}
