@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>은퇴·파이어족 세금/건보 시뮬레이터</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+
+<header>
+  <h1>은퇴·파이어족 세금/건보 시뮬레이터</h1>
+  <p class="subtitle">금융소득종합과세 · 종합소득세 · 건강보험료 · 은퇴 현금흐름을 한 번에 추정합니다</p>
+</header>
+
+<div class="disclaimer-banner">
+  ⚠️ 본 결과는 <strong>단순화된 모델에 따른 참고용 추정치</strong>입니다. 실제 세액·보험료와 다를 수 있으며,
+  실제 신고·산정은 세무사, 국세청(홈택스), 국민건강보험공단의 안내를 따르십시오. 입력하신 정보는 어디에도 저장되지 않습니다.
+</div>
+
+<nav id="step-nav">
+  <button data-step="1" class="active">1. 기본 정보</button>
+  <button data-step="2">2. 소득</button>
+  <button data-step="3">3. 금융소득</button>
+  <button data-step="4">4. 연금</button>
+  <button data-step="5">5. 재산/임대</button>
+  <button data-step="6" disabled>6. 결과</button>
+</nav>
+
+<main>
+
+<!-- Step 1: 기본 정보 -->
+<section class="step" id="step-1">
+  <h2>Step 1. 기본 정보</h2>
+  <div class="field">
+    <label for="current_age">현재 나이 <span class="required">*</span></label>
+    <input type="number" id="current_age" min="19" max="89" value="50">
+  </div>
+  <div class="field">
+    <label for="retire_age">은퇴(예정) 나이 <span class="required">*</span></label>
+    <input type="number" id="retire_age" min="19" max="90" value="55">
+    <p class="hint">이미 은퇴하셨다면 현재 나이와 같거나 작은 값을 입력하세요. 은퇴 이후 근로소득은 0으로 처리됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="insurance_status">현재 건강보험 자격 <span class="required">*</span></label>
+    <select id="insurance_status">
+      <option value="직장">직장가입자 (회사에서 보험료를 내고 있음)</option>
+      <option value="지역">지역가입자 (직접 고지서로 납부)</option>
+      <option value="피부양자">피부양자 (가족의 직장보험에 얹혀 있음)</option>
+    </select>
+  </div>
+  <div class="field checkbox-field">
+    <label><input type="checkbox" id="married"> 배우자가 있습니다</label>
+    <p class="hint">소득이 없는 배우자의 기본공제(150만 원)만 단순 반영합니다.</p>
+  </div>
+  <div class="field">
+    <label for="public_pension_start_age">공적연금 수령 개시 나이</label>
+    <input type="number" id="public_pension_start_age" min="50" max="80" value="65">
+    <p class="hint">국민연금은 출생연도에 따라 63~65세부터 수령합니다. 모르시면 65로 두세요.</p>
+  </div>
+  <div class="field">
+    <label for="annual_living_expense">연간 생활비 (원)</label>
+    <input type="number" id="annual_living_expense" min="0" value="0" class="money">
+    <p class="hint">1년 동안 쓰는 총 지출입니다. "자산이 몇 살까지 버티는지" 계산에 쓰입니다. 0이면 이 계산은 생략됩니다.</p>
+  </div>
+</section>
+
+<!-- Step 2: 소득 -->
+<section class="step hidden" id="step-2">
+  <h2>Step 2. 근로/사업/기타 소득 <span class="unit-note">(연간 · 세전 · 원)</span></h2>
+  <div class="field">
+    <label for="earned">근로소득 (총급여)</label>
+    <input type="number" id="earned" min="0" value="0" class="money">
+    <p class="hint">세전 연봉입니다. 은퇴 나이 전까지만 반영됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="business">사업소득</label>
+    <input type="number" id="business" min="0" value="0" class="money">
+    <p class="hint">은퇴 후에도 계속된다고 가정합니다. 주의: 사업소득이 있으면 피부양자 자격에 불리합니다.</p>
+  </div>
+  <div class="field">
+    <label for="other">기타소득</label>
+    <input type="number" id="other" min="0" value="0" class="money">
+    <p class="hint">강연료, 원고료 등 일시적인 소득의 연간 합계입니다.</p>
+  </div>
+</section>
+
+<!-- Step 3: 금융소득 -->
+<section class="step hidden" id="step-3">
+  <h2>Step 3. 금융소득 <span class="unit-note">(연간 · 세전 · 원)</span></h2>
+  <p class="step-note">일반(과세) 계좌 기준으로 입력하세요. <strong>연금저축·IRP·ISA 계좌 안의 금액은 모두 제외</strong>합니다.</p>
+  <div class="field">
+    <label for="interest">이자소득</label>
+    <input type="number" id="interest" min="0" value="0" class="money">
+    <p class="hint">예금·적금 이자, 채권 이자의 연간 합계입니다.</p>
+  </div>
+  <div class="field">
+    <label for="dividend_domestic">국내 상장주식 배당금</label>
+    <input type="number" id="dividend_domestic" min="0" value="0" class="money">
+  </div>
+  <div class="field">
+    <label for="dividend_foreign">해외 상장주식 배당금</label>
+    <input type="number" id="dividend_foreign" min="0" value="0" class="money">
+    <p class="hint">원화로 환산한 금액을 입력하세요.</p>
+  </div>
+  <div class="field">
+    <label for="etf_domestic_equity_dist">국내 주식형 ETF 분배금</label>
+    <input type="number" id="etf_domestic_equity_dist" min="0" value="0" class="money">
+    <p class="hint">예: KODEX 200, TIGER 코스피. 매매차익은 비과세라서 분배금만 입력하면 됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="etf_domestic_other_dist_and_gain">기타 국내 상장 ETF 분배금 + 매매차익</label>
+    <input type="number" id="etf_domestic_other_dist_and_gain" min="0" value="0" class="money">
+    <p class="hint">해외지수·채권·원자재·레버리지·TR·액티브 등 "국내 주식형이 아닌" 국내 상장 ETF입니다.
+    예: TIGER 미국S&amp;P500, KODEX 미국나스닥100. 분배금과 매도 차익을 <strong>합쳐서</strong> 입력하세요. 이 금액은 전부 금융소득에 합산됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="etf_foreign_dist">해외 상장 ETF 분배금</label>
+    <input type="number" id="etf_foreign_dist" min="0" value="0" class="money">
+    <p class="hint">예: 미국 거래소의 SPY, QQQ, SCHD 분배금. 배당소득으로 금융소득에 합산됩니다.</p>
+  </div>
+  <div class="field highlight-field">
+    <label for="capital_gain_foreign">해외 상장 주식/ETF 양도차익 (매도 차익)</label>
+    <input type="number" id="capital_gain_foreign" min="0" value="0" class="money">
+    <p class="hint">이 금액은 금융소득 2,000만 원 판정에 <strong>포함되지 않고</strong>,
+    양도소득세(연 250만 원 공제 후 22%)로 따로 계산됩니다.</p>
+  </div>
+</section>
+
+<!-- Step 4: 연금 -->
+<section class="step hidden" id="step-4">
+  <h2>Step 4. 연금 <span class="unit-note">(세전 · 원)</span></h2>
+  <div class="field">
+    <label for="public_annual">공적연금 연간 수령(예정)액</label>
+    <input type="number" id="public_annual" min="0" value="0" class="money">
+    <p class="hint">국민연금·공무원연금·사학연금·군인연금. Step 1의 개시 나이부터 반영됩니다.
+    주의: 건보료에는 50%만 반영되지만 <strong>피부양자 판정에는 100% 반영</strong>됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="private_annual">사적연금 연간 수령(예정)액</label>
+    <input type="number" id="private_annual" min="0" value="0" class="money">
+    <p class="hint">연금저축 + IRP에서 연금으로 받는 금액. 연 1,500만 원 이하면 3.3~5.5% 저율 과세로 끝나고,
+    건강보험료에도 잡히지 않습니다. 은퇴 나이부터 반영됩니다.</p>
+  </div>
+  <div class="field">
+    <label for="tax_free_annual">비과세 연금 연간 수령액</label>
+    <input type="number" id="tax_free_annual" min="0" value="0" class="money">
+    <p class="hint">비과세 요건을 채운 연금보험 등. 세금·건보료 계산에서 제외되고 생활비에만 더해집니다.</p>
+  </div>
+  <div class="field">
+    <label for="housing_monthly">주택연금 월 수령액</label>
+    <input type="number" id="housing_monthly" min="0" value="0" class="money">
+    <p class="hint">월 단위로 입력하세요. 대출 성격이라 세금·건보료에 잡히지 않습니다.</p>
+  </div>
+</section>
+
+<!-- Step 5: 재산/임대 -->
+<section class="step hidden" id="step-5">
+  <h2>Step 5. 재산 / 임대 <span class="unit-note">(원)</span></h2>
+  <div class="field">
+    <label for="real_estate_tax_base">부동산 재산세 과세표준</label>
+    <input type="number" id="real_estate_tax_base" min="0" value="0" class="money">
+    <p class="hint">재산세 고지서의 "과세표준"을 보고 적으세요. 모르시면 대략 <strong>공시가격의 60%</strong>를 넣으면 됩니다.
+    지역 건보료와 피부양자 판정(5.4억/9억 기준)에 쓰입니다.</p>
+  </div>
+  <div class="field">
+    <label for="rent_monthly">임대 월세 수입 (월)</label>
+    <input type="number" id="rent_monthly" min="0" value="0" class="money">
+    <p class="hint">월 단위로 입력하세요. 주의: 임대소득이 있으면 피부양자 자격에 불리합니다.</p>
+  </div>
+  <div class="field">
+    <label for="financial_assets">금융자산 총액</label>
+    <input type="number" id="financial_assets" min="0" value="0" class="money">
+    <p class="hint">예금 + 주식 + 펀드 + 채권 등의 현재 총액. 연령별 자산 잔액 시뮬레이션의 출발점이 됩니다 (연 4% 수익률 가정).</p>
+  </div>
+  <div class="submit-area">
+    <button id="btn-simulate" class="primary big">📊 계산하기</button>
+    <p id="error-box" class="error hidden"></p>
+  </div>
+</section>
+
+<!-- Step 6: 결과 -->
+<section class="step hidden" id="step-6">
+  <h2>Step 6. 결과</h2>
+  <p class="step-note">아래 판정·금액은 <strong>현재 나이 기준 1년치</strong>입니다. 나이에 따른 변화는 그래프와 표에서 확인하세요.</p>
+
+  <div id="result-cards" class="cards"></div>
+
+  <h3>시나리오 비교</h3>
+  <p class="step-note">B·C는 금융소득(이자·배당·분배금)을 한도 이하로 줄여서 관리하는 경우입니다. 해외 양도차익은 그대로 둡니다.</p>
+  <div class="table-wrap"><table id="scenario-table"></table></div>
+
+  <h3>연령별 순 현금흐름</h3>
+  <div class="chart-wrap"><canvas id="chart-net"></canvas></div>
+
+  <h3>연령별 금융자산 잔액</h3>
+  <div class="chart-wrap"><canvas id="chart-assets"></canvas></div>
+
+  <h3>연도별 상세 <select id="detail-scenario">
+    <option value="A">시나리오 A</option>
+    <option value="B">시나리오 B</option>
+    <option value="C">시나리오 C</option>
+  </select></h3>
+  <div class="table-wrap"><table id="detail-table"></table></div>
+
+  <details class="simplification">
+    <summary>이 계산이 실제와 다를 수 있는 이유 (단순화 안내)</summary>
+    <ul>
+      <li>배당세액공제, 비교과세 등 세부 규정을 생략해 세금이 실제보다 <strong>약간 많게(보수적으로)</strong> 나오는 경향이 있습니다.</li>
+      <li>근로·연금소득공제를 단순식으로 계산하며, 자녀·의료비 등 각종 공제는 반영하지 않습니다.</li>
+      <li>지역 건보료의 재산 부과분은 실제 60등급 점수표 대신 단순 비율로 근사합니다 (±20% 수준 오차 가능).</li>
+      <li>임대소득의 필요경비·분리과세 선택을 반영하지 않아 임대 비중이 크면 세금이 과대 추정됩니다.</li>
+      <li>세율·기준선은 2025년 제도 기준이며, 미래의 제도 변화·물가상승은 반영하지 않습니다.</li>
+    </ul>
+  </details>
+</section>
+
+</main>
+
+<div class="nav-buttons">
+  <button id="btn-prev" class="hidden">← 이전</button>
+  <button id="btn-next" class="primary">다음 →</button>
+</div>
+
+<footer>
+  이 도구는 의사결정을 돕는 참고용 시뮬레이터입니다. 세무 신고·건보료 산정의 근거 자료로 사용할 수 없습니다.
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
