@@ -54,11 +54,11 @@ def simulate(user: UserInput) -> SimulationResult:
     )
 
 
-# 프론트엔드 정적 파일 서빙 (frontend/ 폴더가 있으면)
-_frontend = Path(__file__).resolve().parent.parent / "frontend"
+# 프론트엔드 정적 파일 서빙 (로컬 실행용 — Vercel에서는 public/을 직접 서빙)
+_frontend = Path(__file__).resolve().parent.parent / "public"
 if _frontend.is_dir():
     @app.get("/", include_in_schema=False)
     def index():
         return FileResponse(_frontend / "index.html")
 
-    app.mount("/static", StaticFiles(directory=_frontend), name="static")
+    app.mount("/static", StaticFiles(directory=_frontend / "static"), name="static")

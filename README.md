@@ -28,22 +28,37 @@ uvicorn backend.main:app
 끝낼 때는 터미널에서 `Ctrl+C`를 누릅니다.
 
 - 계산 API 문서(개발자용): http://localhost:8000/docs
-- 테스트 실행: `python -m pytest backend/tests/ -v`
+- 테스트 실행: `pip install -r requirements-dev.txt` 후 `python -m pytest backend/tests/ -v`
+
+## 버셀(Vercel)로 배포하기
+
+이 저장소는 버셀에 바로 배포할 수 있게 설정되어 있습니다 (`vercel.json`, `api/index.py`).
+
+1. [vercel.com](https://vercel.com)에 GitHub 계정으로 로그인
+2. **Add New → Project** → 이 저장소(`fire`) **Import**
+3. 설정은 **아무것도 바꾸지 말고** 그대로 **Deploy** 클릭 (Framework Preset: Other 자동 인식)
+4. 1~2분 뒤 생성되는 `https://프로젝트명.vercel.app` 주소로 접속
+
+- 버셀은 기본적으로 **main 브랜치를 운영 주소**로, 다른 브랜치는 미리보기 주소로 배포합니다.
+  다른 브랜치에서 테스트 중이라면 Vercel 프로젝트 설정 → **Git → Production Branch**를 해당 브랜치로 바꾸거나,
+  브랜치를 main에 합치면 됩니다.
+- 입력 정보는 이 배포에서도 어디에도 저장되지 않습니다.
 
 ## 자주 고치게 되는 곳
 
 | 바꾸고 싶은 것 | 파일 |
 |----------------|------|
 | 세율, 2,000만 기준선, 건보료율 등 **숫자** (제도 개정 시) | `backend/rules.py` |
-| 화면의 **안내 문구** | `frontend/index.html` |
-| **색·디자인** | `frontend/style.css` |
+| 화면의 **안내 문구** | `public/index.html` |
+| **색·디자인** | `public/static/style.css` |
 
 ## 폴더 구성
 
 ```
 docs/      설계 문서 (역할별 산출물 01~06 — 계산 규칙·화면 설계·단순화 포인트 전부 기록)
 backend/   계산 엔진 + API 서버 (Python/FastAPI)
-frontend/  입력 화면 + 결과 화면 (단일 HTML, 빌드 불필요)
+public/    입력 화면 + 결과 화면 (단일 HTML, 빌드 불필요)
+api/       버셀(Vercel) 배포용 진입점
 ```
 
 계산 로직의 근거와 한계가 궁금하면 `docs/02_세무건보_규칙.md`(계산식·단순화 포인트 S1~S12)부터 보세요.
