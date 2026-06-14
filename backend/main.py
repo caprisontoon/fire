@@ -7,12 +7,12 @@ API 문서: http://localhost:8000/docs
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .health_insurance import calc_health_insurance
 from .models import (AggregateFinancialTaxResult, HealthInsuranceResult,
                      IncomeTaxResult, SimulationResult, UserInput)
+from .portfolio import (PRODUCT_TYPES, PortfolioSimInput, simulate_portfolios)
 from .simulation import run_scenarios
 from .tax import (calc_financial_income, calc_income_tax, classify_pension,
                   is_subject_to_aggregate_financial_tax)
@@ -54,11 +54,22 @@ def simulate(user: UserInput) -> SimulationResult:
     )
 
 
+@app.get("/api/product-types")
+def product_types() -> dict:
+    """포트폴리오 화면의 상품 유형 드롭다운용. 코드 → {label, note}."""
+    return {code: {"label": v["label"], "note": v["note"]}
+            for code, v in PRODUCT_TYPES.items()}
+
+
+@app.post("/api/simulate-portfolio")
+def simulate_portfolio(data: PortfolioSimInput) -> dict:
+    """포트폴리오 설계 모드: 2~3개 구성을 나란히 비교."""
+    return simulate_portfolios(data)
+
+
 # 프론트엔드 정적 파일 서빙 (로컬 실행용 — Vercel에서는 public/을 직접 서빙)
+# html=True 로 루트에 마운트하면 index.html / portfolio.html / static/* 이 모두 서빙된다.
+# /api/* 라우트는 위에서 먼저 등록되므로 마운트보다 우선 매칭된다.
 _frontend = Path(__file__).resolve().parent.parent / "public"
 if _frontend.is_dir():
-    @app.get("/", include_in_schema=False)
-    def index():
-        return FileResponse(_frontend / "index.html")
-
-    app.mount("/static", StaticFiles(directory=_frontend / "static"), name="static")
+    app.mount("/", StaticFiles(directory=_frontend, html=True), name="static")
