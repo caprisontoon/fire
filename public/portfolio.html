@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포트폴리오 설계 — 은퇴 세금/건보 시뮬레이터</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+
+<header>
+  <h1>포트폴리오 설계 시뮬레이터</h1>
+  <p class="subtitle">노후에 자산을 어떻게 구성하면 현금흐름·세금·건보료가 어떻게 되는지 비교합니다</p>
+</header>
+
+<div class="mode-nav">
+  <a href="/index.html">현재 상태 진단</a>
+  <a href="/portfolio.html" class="active">포트폴리오 설계</a>
+</div>
+
+<div class="disclaimer-banner">
+  ⚠️ 본 결과는 <strong>단순화된 모델에 따른 참고용 추정치</strong>입니다. 수익률은 입력하신 가정치이며 실제와 다를 수 있습니다.
+  입력 정보는 어디에도 저장되지 않습니다.
+</div>
+
+<main>
+
+<section class="step">
+  <h2>1. 기본 정보</h2>
+  <div class="grid-2">
+    <div class="field">
+      <label for="current_age">현재 나이</label>
+      <input type="number" id="current_age" min="19" max="89" value="50">
+    </div>
+    <div class="field">
+      <label for="target_age">이 포트폴리오로 사는 시작 나이 (목표 나이)</label>
+      <input type="number" id="target_age" min="40" max="90" value="60">
+      <p class="hint">예: 60. 이 나이부터 90세까지 시뮬레이션합니다.</p>
+    </div>
+    <div class="field">
+      <label for="insurance_status">건강보험 자격 (이 나이 기준 예상)</label>
+      <select id="insurance_status">
+        <option value="지역">지역가입자</option>
+        <option value="피부양자">피부양자 (가족 직장보험에 등재)</option>
+        <option value="직장">직장가입자</option>
+      </select>
+      <p class="hint">은퇴 후에는 보통 지역가입자 또는 피부양자입니다. 피부양자는 소득·재산 조건을 넘으면 자동으로 지역으로 전환되어 계산됩니다.</p>
+    </div>
+    <div class="field">
+      <label for="public_pension_start_age">공적연금 개시 나이</label>
+      <input type="number" id="public_pension_start_age" min="50" max="80" value="65">
+    </div>
+    <div class="field checkbox-field">
+      <label><input type="checkbox" id="married"> 배우자가 있습니다</label>
+    </div>
+    <div class="field">
+      <label for="annual_living_expense">연간 생활비 (원)</label>
+      <input type="number" id="annual_living_expense" min="0" value="36000000" class="money">
+      <p class="hint">자산이 몇 살까지 버티는지 계산에 쓰입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <h2>2. 연금 <span class="unit-note">(목표 나이 시점, 세전 · 원)</span></h2>
+  <div class="grid-2">
+    <div class="field">
+      <label for="public_annual">공적연금 연 수령액</label>
+      <input type="number" id="public_annual" min="0" value="0" class="money">
+      <p class="hint">건보료에는 50%, 피부양자 판정에는 100% 반영됩니다.</p>
+    </div>
+    <div class="field">
+      <label for="private_annual">사적연금 연 수령액 (연금저축·IRP)</label>
+      <input type="number" id="private_annual" min="0" value="0" class="money">
+    </div>
+    <div class="field">
+      <label for="tax_free_annual">비과세 연금 연 수령액</label>
+      <input type="number" id="tax_free_annual" min="0" value="0" class="money">
+    </div>
+    <div class="field">
+      <label for="housing_monthly">주택연금 월 수령액</label>
+      <input type="number" id="housing_monthly" min="0" value="0" class="money">
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <h2>3. 재산 / 임대 <span class="unit-note">(원)</span></h2>
+  <div class="grid-2">
+    <div class="field">
+      <label for="real_estate_tax_base">부동산 재산세 과세표준</label>
+      <input type="number" id="real_estate_tax_base" min="0" value="0" class="money">
+      <p class="hint">모르면 공시가격의 약 60%. 지역 건보료·피부양자 판정에 쓰입니다.</p>
+    </div>
+    <div class="field">
+      <label for="rent_monthly">임대 월세 수입 (월)</label>
+      <input type="number" id="rent_monthly" min="0" value="0" class="money">
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <h2>4. 포트폴리오 구성 <span class="unit-note">(목표 나이 시점의 평가금액)</span></h2>
+  <p class="step-note">상품 유형을 고르면 세금 분류(국내 주식형 ETF는 매매차익 비과세, 해외는 양도 별도 등)가 자동으로 적용됩니다.
+  최대 3개의 구성을 만들어 비교하세요.</p>
+  <div id="portfolios"></div>
+  <button id="btn-add-portfolio" class="add-btn">＋ 포트폴리오 추가</button>
+</section>
+
+<div class="submit-area">
+  <button id="btn-simulate" class="primary big">📊 비교 계산하기</button>
+  <p id="error-box" class="error hidden"></p>
+</div>
+
+<section class="step hidden" id="result-section">
+  <h2>결과 비교</h2>
+  <p class="step-note">아래 표는 <strong>목표 나이 시점(1년치)</strong> 기준입니다. 나이별 변화는 그래프와 상세표에서 확인하세요.</p>
+  <div class="table-wrap"><table id="compare-table"></table></div>
+
+  <h3>구성별 연 금융소득 내역</h3>
+  <div id="breakdowns" class="cards"></div>
+
+  <h3>나이별 순 현금흐름</h3>
+  <div class="chart-wrap"><canvas id="chart-net"></canvas></div>
+
+  <h3>나이별 금융자산 잔액</h3>
+  <div class="chart-wrap"><canvas id="chart-assets"></canvas></div>
+
+  <h3>나이별 상세 <select id="detail-pick"></select></h3>
+  <div class="table-wrap"><table id="detail-table"></table></div>
+
+  <details class="simplification">
+    <summary>이 계산이 실제와 다를 수 있는 이유</summary>
+    <ul id="disclaimer-list"></ul>
+  </details>
+</section>
+
+</main>
+
+<!-- 상품 보유 행 템플릿 -->
+<template id="holding-template">
+  <div class="holding-row">
+    <select class="h-type"></select>
+    <input class="h-label" type="text" placeholder="메모 (예: TIGER 미국S&P500)">
+    <input class="h-amount money-mini" type="number" min="0" placeholder="평가금액(원)">
+    <input class="h-yield" type="number" min="0" max="100" step="0.1" placeholder="수익률%">
+    <span class="h-income">연 0원</span>
+    <button class="h-del" title="삭제">✕</button>
+  </div>
+</template>
+
+<footer>
+  이 도구는 의사결정을 돕는 참고용 시뮬레이터입니다. 세무 신고·건보료 산정의 근거 자료로 사용할 수 없습니다.
+</footer>
+
+<script src="/static/portfolio.js"></script>
+</body>
+</html>

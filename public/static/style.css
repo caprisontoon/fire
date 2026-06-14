@@ -14,6 +14,47 @@ header h1 { margin: 0; font-size: 1.5rem; }
   padding: 10px 16px; font-size: 0.85rem; text-align: center;
 }
 
+/* 모드 전환 탭 (현재 상태 진단 / 포트폴리오 설계) */
+.mode-nav {
+  display: flex; justify-content: center; gap: 8px;
+  background: #fff; padding: 10px; border-bottom: 1px solid #e5e7eb;
+}
+.mode-nav a {
+  text-decoration: none; color: #374151; padding: 8px 18px;
+  border-radius: 20px; border: 1px solid #d1d5db; font-size: 0.9rem;
+}
+.mode-nav a.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; }
+.add-btn { background: #eff6ff; color: #1e3a8a; border: 1px dashed #93c5fd; }
+.add-btn:hover { background: #dbeafe; }
+
+/* 포트폴리오 카드 */
+.portfolio-card { border: 1px solid #d1d5db; border-radius: 12px; padding: 14px; margin-bottom: 16px; background: #fafbff; }
+.pf-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.pf-name { font-size: 1.05rem; font-weight: 700; border: none; border-bottom: 2px solid #1e3a8a; background: transparent; padding: 4px 2px; color: #1e3a8a; flex: 1; }
+.pf-del { color: #b91c1c; border-color: #fca5a5; font-size: 0.8rem; padding: 5px 10px; }
+.pf-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.pf-subtotal { font-size: 0.9rem; font-weight: 600; color: #1d4ed8; }
+
+.holding-row { display: grid; grid-template-columns: 1.4fr 1.4fr 1fr 0.7fr auto auto; gap: 6px; align-items: center; margin-top: 6px; }
+.holding-row select, .holding-row input { padding: 7px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.88rem; width: 100%; }
+.h-income { font-size: 0.82rem; color: #1d4ed8; font-weight: 600; white-space: nowrap; }
+.h-del { color: #9ca3af; border: none; background: transparent; font-size: 1rem; cursor: pointer; padding: 0 6px; }
+.h-del:hover { color: #b91c1c; }
+.h-note { font-size: 0.76rem; color: #6b7280; margin: 2px 0 8px; padding-left: 2px; }
+
+.row-label { text-align: left; font-weight: 600; background: #f0f4ff; }
+.good-text { color: #047857; font-weight: 700; }
+.bad-text { color: #b91c1c; font-weight: 700; }
+.breakdown { margin: 0; padding-left: 18px; font-size: 0.85rem; }
+.breakdown li { margin: 2px 0; }
+
+@media (max-width: 640px) {
+  .holding-row { grid-template-columns: 1fr 1fr; }
+  .h-income { grid-column: 1 / 2; }
+}
+
 #step-nav {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
   padding: 12px 8px; background: #fff; border-bottom: 1px solid #e5e7eb;
